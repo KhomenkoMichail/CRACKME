@@ -117,6 +117,14 @@ Input file that hacks the program:
 
 The 02 and 03 bytes contain the address of the function "printfSuccessMessage" (little-endian). 0FFh byte - ASCII code of [Enter].
 
+## Hacking a partner's program  
+I received the file "krakra.com" from my colleague. I used IDA disassembler and here are my steps to crack his program:
+
+#### 1. Quick look  
+
+By looking through the program code in IDA's text mode, I noticed data embedded within the code. This reminded me of my buffer overflow vulnerability. Then I started looking for a function that handles user input.
+
+
 
 
 
