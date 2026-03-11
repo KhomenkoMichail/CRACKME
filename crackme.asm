@@ -19,7 +19,7 @@ Start:
 
                             jmp main
 
-
+requestMessage              db      "Please enter the password: ", 0Dh, 0Ah, '$'
 messageSuccess              db      "Access granted!"
 messageFail                 db      "Access denied."
 
@@ -29,6 +29,10 @@ bufferData                  db 256 dup(0)
 
 main:
                             cld
+
+                            mov ah, 09h
+                            mov dx, offset requestMessage
+                            int 21h
 
                             call getPassword
 
