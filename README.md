@@ -1,13 +1,15 @@
-# Educational task "CRACKME"  
+# Educational task "CRACKME"
 
-## Description  
-The program asks for a password. If the user enters the correct password, the phrase "access granted!" appears; otherwise the phrase "access denied." is displayed.  
+[Русскоязычная версия](readmeRUS.md)
 
-The program contains two specially created vulnerabilities that cause the program to display the "access granted!" phrase when an incorrect password is entered.  
+## Description
+The program asks for a password. If the user enters the correct password, the phrase "access granted!" appears; otherwise the phrase "access denied." is displayed.
 
-The educational task was to create such a program and to find vulnerabilities in your partner's program. 
+The program contains two specially created vulnerabilities that cause the program to display the "access granted!" phrase when an incorrect password is entered.
 
-## My program  
+The educational task was to create such a program and to find vulnerabilities in your partner's program.
+
+## My program
 
 You can see the code of my program in the file "creackme.asm".
 
@@ -20,11 +22,11 @@ It displays a red frame with a message when an incorrect password is entered, an
 <img width="1023" height="640" alt="image" src="https://github.com/user-attachments/assets/bb01b7be-2af3-4e51-b3f1-d1c1814e75f2" />
 
 
-### Program vulnerabilities:  
-#### 1. Buffer overflow  
-The password entered by the user is processed using 01 function of the 21 interrupt and is written character by character into the buffer located before the program code.  
+### Program vulnerabilities:
+#### 1. Buffer overflow
+The password entered by the user is processed using 01 function of the 21 interrupt and is written into the buffer located before the program code.
 
-Despite the 256-byte buffer size, the program doesn't check the length of the entered password. Therefore, the entered password could exceed the buffer's boundaries and alter the program code, for example, replacing the password check with "NOP."  
+The program doesn't check the length of the entered password. Therefore, the entered password could exceed the buffer and alter the program code, for example, replacing the password check with "NOP."
 
 ```
 bufferData                  db 256 dup(0)
@@ -54,7 +56,7 @@ endProgram:
 
 #### 2. 8-bit register integer overflow
 
-The function "cmpPasswords" uses stack-based argument passing in the Pascal convention. Еhe only argument it takes is the length of the string entered by the user. Then it allocates an array on the stack large enough to save the user's password.
+The function "cmpPasswords" uses stack-based argument passing in the Pascal declaration. The only argument it takes is the length of the string entered by the user. Then it allocates an array on the stack large enough to save the user's password.
 
 The password length is placed in the al register, which is incremented and subtracted from the sp register. The new sp value is used as the address to copy the user password from the buffer.
 
@@ -122,10 +124,10 @@ Input file that hacks the program:
 
 The 02 and 03 bytes contain the address of the function "printfSuccessMessage" (little-endian). 0FFh byte - ASCII code of [Enter].
 
-## Hacking a partner's program  
+## Hacking a partner's program
 I received the file "krakra.com" from my colleague. I used IDA disassembler and here are my steps to crack his program:
 
-#### 1. Quick look  
+#### 1. Quick look
 
 By looking through the program code in IDA's text mode, I noticed data buffer embedded within the code. This reminded me of my buffer overflow vulnerability. Then I started looking for a function that handles user input. This was the first function in the program. It does not check the length of the entered password and writes it to the address of this buffer.
 
@@ -147,13 +149,13 @@ Using input redirection I got a success message:
 
 #### 2. Finding a difficult vulnerability
 
-To find a difficult vulnerability, I began to look through each function of the disassembled code. After the getting password function, the program contains two strange functions that, according to some incomprehensible logic, change the register values. At first I didn't understand what they were doing and continued looking at the code.
+To find a difficult vulnerability, I began to look through each function of the disassembled code. After the getting password function, the program contains two strange functions that, according to some incomprehensible logic, change the register values. At first I didn't understand what they were doing and continued viewing disassembled code.
 
 
 <img width="1455" height="1310" alt="image" src="https://github.com/user-attachments/assets/53f2f40c-18fb-4f1e-8674-4d2698e4d913" />
 
 
-Next came two calls to the function for obtaining password hashes (user and correct).
+Next there are two calls to the function for obtaining password hashes (user and correct).
 
 
 <img width="1312" height="773" alt="image" src="https://github.com/user-attachments/assets/3eeedd60-5e51-4dd9-ad08-848c4498997a" />
@@ -165,9 +167,9 @@ The address of the beginning of the string containing the password is getting by
 <img width="1449" height="327" alt="image" src="https://github.com/user-attachments/assets/f671fb8b-7ea6-4d97-8ed2-affdf8d37f44" />
 
 
-Having reviewed the second function of the program several times, I noticed that the registers it modifies are not used anywhere else, and its only result is moving the value stored at the address contained in si to di. At the end of this function di must contain the address of the correct password to pass it to the function that calculates its hash. This means that the address of the correct password is located at address 017Ch, which is located immediately after the buffer with the incoming password. 
+After reviewing the second function of the program several times, I noticed that the registers it modifies are not used anywhere else, and its only result is moving the value stored at the address contained in si to di. After this function call di must contain the address of the correct password to pass it to the function that calculates its hash. This means that the address of the correct password is located at address 017Ch, which is located immediately after the buffer with the incoming password.
 
-To exploit this vulnerability, I created a file "vzlom1" containing 37 junk bytes (the difference between 017Ch (the address which contains the address of correct password) and 0157h (the address of the buffer's beginning)). Next I wrote two bytes of the incoming password buffer address: "57" and "01" (little-endian). I ended the file with the "0D" byte (the [Enter] ASCII code). 
+To exploit this vulnerability, I created a file "vzlom1" containing 37 junk bytes (the difference between 017Ch (the address which contains the address of correct password) and 0157h (the address of the buffer's beginning)). Next I wrote two bytes of the incoming password buffer address: "57" and "01" (little-endian). I ended the file with the "0D" byte (the [Enter] ASCII code).
 
 
 <img width="1016" height="645" alt="image" src="https://github.com/user-attachments/assets/afc1f257-3e39-4833-9e47-06c585c8d494" />
