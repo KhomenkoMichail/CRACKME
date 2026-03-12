@@ -122,7 +122,20 @@ I received the file "krakra.com" from my colleague. I used IDA disassembler and 
 
 #### 1. Quick look  
 
-By looking through the program code in IDA's text mode, I noticed data embedded within the code. This reminded me of my buffer overflow vulnerability. Then I started looking for a function that handles user input.
+By looking through the program code in IDA's text mode, I noticed data buffer embedded within the code. This reminded me of my buffer overflow vulnerability. Then I started looking for a function that handles user input. This was the first function in the program. It does not check the length of the entered password and writes it to the address of this buffer.
+
+<img width="1695" height="1054" alt="image" src="https://github.com/user-attachments/assets/66642605-1d66-4d96-9386-cebe94377684" />
+
+To exploit this vulnerability, I created a file containing 53 junk bytes (the difference between 018ch (the address of the function following the buffer) and 0157h (the address of the buffer's beginning)). I followed these by the "EB" byte (the command "JMP" byte code), and the "94" byte (the difference between the address of the output "access approved" phrase and the current IP address). I ended the file with the "0D" byte (the [Enter] ASCII code).
+
+<img width="1021" height="642" alt="image" src="https://github.com/user-attachments/assets/c49f9dd4-e5cd-49b5-8229-f96d2cee2fcf" />
+
+Using input redirection I got a success message:
+
+<img width="745" height="90" alt="image" src="https://github.com/user-attachments/assets/386af1fe-017c-4492-9f9b-17e64e1800c3" />
+
+
+
 
 
 
