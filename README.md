@@ -13,9 +13,12 @@ You can see the code of my program in the file "creackme.asm".
 
 It displays a red frame with a message when an incorrect password is entered, and a green frame otherwise.
 
+
 <img width="1023" height="649" alt="image" src="https://github.com/user-attachments/assets/215533fd-5f20-43f7-87be-ae2c5cd71cef" />
 
+
 <img width="1023" height="640" alt="image" src="https://github.com/user-attachments/assets/bb01b7be-2af3-4e51-b3f1-d1c1814e75f2" />
+
 
 ### Program vulnerabilities:  
 #### 1. Buffer overflow  
@@ -113,7 +116,9 @@ cmpPasswords                endp
 ```
 Input file that hacks the program:
 
+
 <img width="1032" height="492" alt="image" src="https://github.com/user-attachments/assets/3d14905d-cb0e-4490-88d1-0f7e1b01afef" />
+
 
 The 02 and 03 bytes contain the address of the function "printfSuccessMessage" (little-endian). 0FFh byte - ASCII code of [Enter].
 
@@ -124,15 +129,60 @@ I received the file "krakra.com" from my colleague. I used IDA disassembler and 
 
 By looking through the program code in IDA's text mode, I noticed data buffer embedded within the code. This reminded me of my buffer overflow vulnerability. Then I started looking for a function that handles user input. This was the first function in the program. It does not check the length of the entered password and writes it to the address of this buffer.
 
+
 <img width="1695" height="1054" alt="image" src="https://github.com/user-attachments/assets/66642605-1d66-4d96-9386-cebe94377684" />
 
-To exploit this vulnerability, I created a file containing 53 junk bytes (the difference between 018ch (the address of the function following the buffer) and 0157h (the address of the buffer's beginning)). I followed these by the "EB" byte (the command "JMP" byte code), and the "94" byte (the difference between the address of the output "access approved" phrase and the current IP address). I ended the file with the "0D" byte (the [Enter] ASCII code).
+
+To exploit this vulnerability, I created a file "vzlom2" containing 53 junk bytes (the difference between 018ch (the address of the function following the buffer) and 0157h (the address of the buffer's beginning)). I followed these by the "EB" byte (the command "JMP" byte code), and the "94" byte (the difference between the address of the output "access approved" phrase and the current IP address). I ended the file with the "0D" byte (the [Enter] ASCII code).
+
 
 <img width="1021" height="642" alt="image" src="https://github.com/user-attachments/assets/c49f9dd4-e5cd-49b5-8229-f96d2cee2fcf" />
 
+
 Using input redirection I got a success message:
 
+
 <img width="745" height="90" alt="image" src="https://github.com/user-attachments/assets/386af1fe-017c-4492-9f9b-17e64e1800c3" />
+
+
+#### 2. Finding a difficult vulnerability
+
+To find a difficult vulnerability, I began to look through each function of the disassembled code. After the getting password function, the program contains two strange functions that, according to some incomprehensible logic, change the register values. At first I didn't understand what they were doing and continued looking at the code.
+
+
+<img width="1455" height="1310" alt="image" src="https://github.com/user-attachments/assets/53f2f40c-18fb-4f1e-8674-4d2698e4d913" />
+
+
+Next came two calls to the function for obtaining password hashes (user and correct).
+
+
+<img width="1312" height="773" alt="image" src="https://github.com/user-attachments/assets/3eeedd60-5e51-4dd9-ad08-848c4498997a" />
+
+
+The address of the beginning of the string containing the password is getting by the function through the di register. When receiving the user password hash, the buffer address is moved to di explicitly, but before processing the correct password, a strange function follows.
+
+
+<img width="1449" height="327" alt="image" src="https://github.com/user-attachments/assets/f671fb8b-7ea6-4d97-8ed2-affdf8d37f44" />
+
+
+Having reviewed the second function of the program several times, I noticed that the registers it modifies are not used anywhere else, and its only result is moving the value stored at the address contained in si to di. At the end of this function di must contain the address of the correct password to pass it to the function that calculates its hash. This means that the address of the correct password is located at address 017Ch, which is located immediately after the buffer with the incoming password. 
+
+To exploit this vulnerability, I created a file "vzlom1" containing 37 junk bytes (the difference between 017Ch (the address which contains the address of correct password) and 0157h (the address of the buffer's beginning)). Next I wrote two bytes of the incoming password buffer address: "57" and "01" (little-endian). I ended the file with the "0D" byte (the [Enter] ASCII code). 
+
+
+<img width="1016" height="645" alt="image" src="https://github.com/user-attachments/assets/afc1f257-3e39-4833-9e47-06c585c8d494" />
+
+
+With this input, the program calculates the hash of the user's password twice and compares it with itself. The check always passes and the program displays
+"access approved" :
+
+
+<img width="750" height="88" alt="image" src="https://github.com/user-attachments/assets/00358047-cff4-4f64-9515-c2349f7295b0" />
+
+
+
+
+
 
 
 
