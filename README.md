@@ -162,7 +162,7 @@ cmpPasswords                endp
 
 <img width="1455" height="1310" alt="image" src="https://github.com/user-attachments/assets/53f2f40c-18fb-4f1e-8674-4d2698e4d913" />
 
-Далее следуют два вызова функции, получающей хеш паролей. (правильного и пользовательского).
+Далее следуют два вызова функции, получающей хеш паролей (правильного и пользовательского).
 
 <img width="1312" height="773" alt="image" src="https://github.com/user-attachments/assets/3eeedd60-5e51-4dd9-ad08-848c4498997a" />
 
@@ -185,3 +185,4 @@ cmpPasswords                endp
 
 
 <img width="750" height="88" alt="image" src="https://github.com/user-attachments/assets/00358047-cff4-4f64-9515-c2349f7295b0" />
+
