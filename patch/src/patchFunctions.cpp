@@ -3,8 +3,8 @@
 #include <assert.h>
 #include <errno.h>
 
-#include "patchFunctions.h"
-#include "fileFunctions.h"
+#include "../include/patchFunctions.h"
+#include "../include/fileFunctions.h"
 
 int changeAimFile (aimFile_t* aimFile, const char* patchFileName) {
     assert(aimFile);
@@ -62,7 +62,7 @@ void runGif(void) {
     int screenCounter = 0;
 
     for (int num = 0; num < NUM_OF_SCREENSHOTS; num++) {
-        sprintf(fileName, "SCREENSHOTS/screen%d.bmp", num);
+        sprintf(fileName, "screensAndSound/screen%d.bmp", num);
         screenShotsArr[num] = txLoadImage(fileName);
         if (screenShotsArr[num] == NULL) {
             printf("Failed to load: %s\n", fileName);

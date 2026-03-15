@@ -2,8 +2,8 @@
 #include <assert.h>
 #include <errno.h>
 
-#include "patchFunctions.h"
-#include "fileFunctions.h"
+#include "../include/patchFunctions.h"
+#include "../include/fileFunctions.h"
 
 int copyFileContent(aimFile_t* aimFile) {
     assert(aimFile);
