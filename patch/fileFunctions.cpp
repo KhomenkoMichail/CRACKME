@@ -8,30 +8,47 @@
 #include "patchFunctions.h"
 #include "fileFunctions.h"
 
-int copyFileContent (aimFile_t* aimFile) {
+int copyFileContent(aimFile_t* aimFile) {
     assert(aimFile);
 
-    int fileDescriptor = open(aimFile->name, O_RDONLY, 0);
-    if (fileDescriptor == -1) {
-
+    FILE* file = fopen(aimFile->name, "rb");
+    if (!file) {
         fprintf(stderr, "Error of opening file \"%s\"", aimFile->name);
         perror("");
         return 1;
     }
 
-    aimFile->size = getSizeOfFile(fileDescriptor);
-    if (aimFile->size == 0) {
-        close(fileDescriptor);
+
+    if (fseek(file, 0, SEEK_END) != 0) {
+        fprintf(stderr, "Error seeking file \"%s\"", aimFile->name);
+        perror("");
+        fclose(file);
+        return 1;
+    }
+    long size = ftell(file);
+    if (size == -1) {
+        fprintf(stderr, "Error telling file \"%s\"", aimFile->name);
+        perror("");
+        fclose(file);
+        return 1;
+    }
+    rewind(file);
+
+    aimFile->size = (unsigned int)size;
+
+    char* fileCopyBuffer = (char*)calloc(aimFile->size, sizeof(char));
+    if (!fileCopyBuffer) {
+        fprintf(stderr, "Memory allocation failed\n");
+        fclose(file);
         return 1;
     }
 
-    char* fileCopyBuffer = (char*)calloc(aimFile->size, sizeof(char));
+    fread(fileCopyBuffer, 1, aimFile->size, file);
 
-    read(fileDescriptor, fileCopyBuffer, aimFile->size);
-
-    if(close(fileDescriptor) != 0) {
+    if (fclose(file) != 0) {
         fprintf(stderr, "Error of closing file \"%s\"", aimFile->name);
         perror("");
+        free(fileCopyBuffer);
         return 1;
     }
 
@@ -39,29 +56,19 @@ int copyFileContent (aimFile_t* aimFile) {
     return 0;
 }
 
-unsigned int getSizeOfFile (int fileDescriptor) {
-    struct stat fileInfo = {};
-
-    if (fstat(fileDescriptor, &fileInfo) == 0)
-        return fileInfo.st_size;
-
-    perror("Error of getting the size of the file");
-    return 0;
-}
-
-int rewriteAimFile (aimFile_t* aimFile) {
+int rewriteAimFile(aimFile_t* aimFile) {
     assert(aimFile);
 
-    int fileDescriptor = open("result.com", O_WRONLY, 0);
-    if (fileDescriptor == -1) {
+    FILE* file = fopen("result.com", "wb");
+    if (!file) {
         fprintf(stderr, "Error of opening file \"%s\"", "result.com");
         perror("");
         return 1;
     }
 
-    write(fileDescriptor, aimFile->bufferCopy, aimFile->size);
+    fwrite(aimFile->bufferCopy, 1, aimFile->size, file);
 
-    if(close(fileDescriptor) != 0) {
+    if (fclose(file) != 0) {
         fprintf(stderr, "Error of closing file \"%s\"", "result.com");
         perror("");
         return 1;
