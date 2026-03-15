@@ -1,3 +1,4 @@
+#include "TxLib.h"
 #include <stdio.h>
 #include <assert.h>
 #include <errno.h>
@@ -16,31 +17,31 @@ int changeAimFile (aimFile_t* aimFile, const char* patchFileName) {
         return 1;
     }
 
-    int newByte = 0;
-    int offset = 0;
+    unsigned int newByte = 0;
+    unsigned int offset = 0;
 
     while (1) {
-        int res = fscanf(patchFile, "%d", &offset);
-        if (res == EOF) break;
-        if (res != 1) {
+        int result = fscanf(patchFile, "%x:", &offset);
+        if (result == EOF) break;
+        if (result != 1) {
             printf("Invalid offset format\n");
             fclose(patchFile);
             return 1;
         }
 
-        res = fscanf(patchFile, "%d", &newByte);
-        if (res == EOF) {
-            printf("Unexpected end of file after offset %d\n", offset);
+        result = fscanf(patchFile, "%x", &newByte);
+        if (result == EOF) {
+            printf("Unexpected end of file after offset %x\n", offset);
             fclose(patchFile);
             return 1;
         }
-        if (res != 1) {
-            printf("Invalid newByte format after offset %d\n", offset);
+        if (result != 1) {
+            printf("Invalid newByte format after offset %x\n", offset);
             fclose(patchFile);
             return 1;
         }
 
-
+        offset -= 0x100;
         aimFile->bufferCopy[offset] = (char)newByte;
     }
 
@@ -55,24 +56,39 @@ int changeAimFile (aimFile_t* aimFile, const char* patchFileName) {
     return 0;
 }
 
-/*int rewriteAimFile (aimFile_t* aimFile) {
-    assert(aimFile);
+void runGif(void) {
+    HDC screenShotsArr[NUM_OF_SCREENSHOTS] = {NULL};
+    char fileName[100];
+    int screenCounter = 0;
 
-    FILE* hackedAimFile = fopen ("result.com", "w");
-    if (!hackedAimFile) {
-        fprintf(stderr, "Error of opening file \"%s\"", aimFile->name);
-        perror("");
-        return 1;
+    for (int num = 0; num < NUM_OF_SCREENSHOTS; num++) {
+        sprintf(fileName, "SCREENSHOTS/screen%d.bmp", num);
+        screenShotsArr[num] = txLoadImage(fileName);
+        if (screenShotsArr[num] == NULL) {
+            printf("Failed to load: %s\n", fileName);
+            break;
+        }
+        screenCounter++;
     }
 
-    fwrite (aimFile->bufferCopy, sizeof (char), aimFile->size, hackedAimFile);
-
-    if (fclose (hackedAimFile) != 0) {
-        fprintf(stderr, "Error of closing file \"%s\"", aimFile->name);
-        perror("");
-        return 1;
+    if (screenCounter == 0) {
+        printf("No frames loaded\n");
+        return;
     }
 
-    return 0;
-}*/
+    int curScreen = 0;
+    for (int i = 0; i < 25; i++) {
+        txSleep(150);
+
+        if (screenShotsArr[curScreen] != NULL) {
+            txBitBlt(txDC(), 0, 0, 1260, 1260, screenShotsArr[curScreen], 0, 0);
+        }
+
+        curScreen = (curScreen + 1) % screenCounter;
+    }
+}
+
+void createWindow (void) {
+        txCreateWindow(1260, 1260);
+}
 

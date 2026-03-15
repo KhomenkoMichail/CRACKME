@@ -3,7 +3,7 @@
 
 int copyFileContent (aimFile_t* aimFile);
 
-unsigned int getSizeOfFile (int fileDescriptor);
+long getSizeOfFile(FILE* file);
 
 int rewriteAimFile (aimFile_t* aimFile);
 
