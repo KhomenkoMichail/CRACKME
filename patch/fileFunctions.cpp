@@ -48,3 +48,24 @@ unsigned int getSizeOfFile (int fileDescriptor) {
     perror("Error of getting the size of the file");
     return 0;
 }
+
+int rewriteAimFile (aimFile_t* aimFile) {
+    assert(aimFile);
+
+    int fileDescriptor = open("result.com", O_WRONLY, 0);
+    if (fileDescriptor == -1) {
+        fprintf(stderr, "Error of opening file \"%s\"", "result.com");
+        perror("");
+        return 1;
+    }
+
+    write(fileDescriptor, aimFile->bufferCopy, aimFile->size);
+
+    if(close(fileDescriptor) != 0) {
+        fprintf(stderr, "Error of closing file \"%s\"", "result.com");
+        perror("");
+        return 1;
+    }
+
+    return 0;
+}

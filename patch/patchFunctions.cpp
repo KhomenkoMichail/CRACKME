@@ -3,6 +3,7 @@
 #include <errno.h>
 
 #include "patchFunctions.h"
+#include "fileFunctions.h"
 
 int changeAimFile (aimFile_t* aimFile, const char* patchFileName) {
     assert(aimFile);
@@ -54,7 +55,7 @@ int changeAimFile (aimFile_t* aimFile, const char* patchFileName) {
     return 0;
 }
 
-int rewriteAimFile (aimFile_t* aimFile) {
+/*int rewriteAimFile (aimFile_t* aimFile) {
     assert(aimFile);
 
     FILE* hackedAimFile = fopen ("result.com", "w");
@@ -73,4 +74,5 @@ int rewriteAimFile (aimFile_t* aimFile) {
     }
 
     return 0;
-}
+}*/
+

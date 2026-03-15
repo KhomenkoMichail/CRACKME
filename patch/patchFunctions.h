@@ -9,6 +9,6 @@ struct aimFile_t {
 
 int changeAimFile (aimFile_t* aimFile, const char* patchFileName);
 
-int rewriteAimFile (aimFile_t* aimFile);
+//int rewriteAimFile (aimFile_t* aimFile);
 
 #endif

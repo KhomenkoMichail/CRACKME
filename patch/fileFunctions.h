@@ -5,4 +5,6 @@ int copyFileContent (aimFile_t* aimFile);
 
 unsigned int getSizeOfFile (int fileDescriptor);
 
+int rewriteAimFile (aimFile_t* aimFile);
+
 #endif
