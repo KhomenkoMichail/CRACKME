@@ -17,7 +17,8 @@
 
 Она выводит красную рамку с фразой "access denied." при вводе неправильного пароля, и зеленую рамку с фразой "access granted!" в противном случае.
 
-<img width="1023" height="649" alt="image" src="https://github.com/user-attachments/assets/215533fd-5f20-43f7-87be-ae2c5cd71cef" />
+
+<img width="1023" height="640" alt="image" src="https://github.com/user-attachments/assets/215533fd-5f20-43f7-87be-ae2c5cd71cef" />
 
 
 <img width="1023" height="640" alt="image" src="https://github.com/user-attachments/assets/bb01b7be-2af3-4e51-b3f1-d1c1814e75f2" />
@@ -124,7 +125,7 @@ cmpPasswords                endp
 Входной файл который взламывает программу:
 
 
-<img width="1032" height="492" alt="image" src="https://github.com/user-attachments/assets/3d14905d-cb0e-4490-88d1-0f7e1b01afef" />
+<img width="1032" height="500" alt="image" src="https://github.com/user-attachments/assets/3d14905d-cb0e-4490-88d1-0f7e1b01afef" />
 
 
 02 и 03 байты содержат адрес функции "printfSuccessMessage" (little-endian). 0FFh байт - ASCII код [Enter].
@@ -138,20 +139,20 @@ cmpPasswords                endp
 Просмотрев дизассемблированый код программы в текстовом режиме IDA, я заметил буфер, помещенный в середину кода программы. Это напомнило мне мою первую уязвимость с переполнением буфера. Тогда я начал искать функцию получения входящего пароля, ей оказалась первая функция, вызываемая программой. Она не проверяет длину пользовательского пароля и записывает его в обнаруженный мной буфер.
 
 
-<img width="1695" height="1054" alt="image" src="https://github.com/user-attachments/assets/66642605-1d66-4d96-9386-cebe94377684" />
+<img width="1000" height="500" alt="image" src="https://github.com/user-attachments/assets/66642605-1d66-4d96-9386-cebe94377684" />
 
 
 Чтобы использовать эту уязвимость я создал файл "vzlom2", который содержал 53 мусорных байта
 (разность между 018ch (адрес следующий сразу за буфером) и 0157h (адрес начала буфера)). Далее я поместил байт "EB" (байт код команды "JMP") и байт "94" (разность между адресом вывода "access approved" и текущим IP адресом). В конце помещен байт "0D" ([Enter] ASCII код).
 
 
-<img width="1021" height="642" alt="image" src="https://github.com/user-attachments/assets/c49f9dd4-e5cd-49b5-8229-f96d2cee2fcf" />
+<img width="1000" height="500" alt="image" src="https://github.com/user-attachments/assets/c49f9dd4-e5cd-49b5-8229-f96d2cee2fcf" />
 
 
 Воспользовавшись перенаправлением ввода я получил нужное сообщение:
 
 
-<img width="745" height="90" alt="image" src="https://github.com/user-attachments/assets/386af1fe-017c-4492-9f9b-17e64e1800c3" />
+<img width="1000" height="100" alt="image" src="https://github.com/user-attachments/assets/386af1fe-017c-4492-9f9b-17e64e1800c3" />
 
 
 #### 2. Поиск сложной уязвимости
@@ -160,17 +161,18 @@ cmpPasswords                endp
 За функцией получения пользовательского ввода в программе содержатся две странные функции, которые, следуя непонятной логике, заменяют значения регистров. Сначала я не понял для чего они нужны и продолжил поиск уязвимости.
 
 
-<img width="1455" height="1310" alt="image" src="https://github.com/user-attachments/assets/53f2f40c-18fb-4f1e-8674-4d2698e4d913" />
+<img width="1000" height="500" alt="image" src="https://github.com/user-attachments/assets/53f2f40c-18fb-4f1e-8674-4d2698e4d913" />
+
 
 Далее следуют два вызова функции, получающей хеш паролей. (правильного и пользовательского).
 
-<img width="1312" height="773" alt="image" src="https://github.com/user-attachments/assets/3eeedd60-5e51-4dd9-ad08-848c4498997a" />
+<img width="1000" height="500" alt="image" src="https://github.com/user-attachments/assets/3eeedd60-5e51-4dd9-ad08-848c4498997a" />
 
 
 Хэш-функция принимает адрес начала строки через регистр di. Чтобы определить хэш пользовательского пароля, автор кода напрямую передает функции адрес буфера, однако перед получением хэша правильного пароля идут те самые непонятные функции:
 
 
-<img width="1449" height="327" alt="image" src="https://github.com/user-attachments/assets/f671fb8b-7ea6-4d97-8ed2-affdf8d37f44" />
+<img width="1000" height="500" alt="image" src="https://github.com/user-attachments/assets/f671fb8b-7ea6-4d97-8ed2-affdf8d37f44" />
 
 
 После внимательного просмотра этих функций, я заметил, что значения регистров, изменяемые ими нигде не используются, и единственный результат этих функций - перемещение значения хранящегося по адресу, помещенному в si в di. После вызова этих функций регистр di должен содержать адрес строки с правильным паролем программы, чтобы передать его функции, вычисляющей хэш. Это означает что адрес правильного пароля содержится по адресу 017Ch, который расположен сразу после буфера с пользовательским паролем.
@@ -178,13 +180,14 @@ cmpPasswords                endp
 Чтобы воспользоваться уязвимостью, я создал файл "vzlom1", содержащий 37 мусорных байтов (разность между 017Ch (адрес по которому расположен адрес правильного пароля) и 0157h (адрес начала буфера с пользовательским паролем)). Дальше я поместил два байта адреса пользовательского пароля: "57" and "01" (little-endian). Я завершил файл байтом "0D" ([Enter] ASCII код).
 
 
-<img width="1016" height="645" alt="image" src="https://github.com/user-attachments/assets/afc1f257-3e39-4833-9e47-06c585c8d494" />
+<img width="1000" height="500" alt="image" src="https://github.com/user-attachments/assets/afc1f257-3e39-4833-9e47-06c585c8d494" />
 
 
 При таком вводе программа дважды вычисляет хэш пользовательского пароля и сравнивает два одинаковых значения. Проверка всегда проходит и выводится нужная фраза:
 
 
-<img width="750" height="88" alt="image" src="https://github.com/user-attachments/assets/00358047-cff4-4f64-9515-c2349f7295b0" />
+<img width="1000" height="100" alt="image" src="https://github.com/user-attachments/assets/00358047-cff4-4f64-9515-c2349f7295b0" />
+
 
 ## Программа-патчер на языке СИ.
 
@@ -205,13 +208,17 @@ cmpPasswords                endp
 
 Данные операции сопровождаются 8-битным рингтоном звонка NOKIA-3310 и анимацией взлома:
 
-![alt text](/patch/screensAndSound/screen0.bmp)
+
+<img src="/patch/screensAndSound/screen0.bmp" alt="image" width="400" height="600">
+
 
 ### Применение для взлома
 
 Применяя дизассемблер IDA к .com файлу своего напарника, я обнаружил, что по адресу 0120h и 0121h находится операция условного перехода jnz, которая перенаправляет программу на вывод фразы "access denied" при несовпадение хэшей паролей:
 
-![alt text](readmeImgs/image1.png)
+
+<img src="readmeImgs/image1.png" alt="image" width="1000" height="500">
+
 
 Поместив в файл patch.txt следующие инструкции:
 
@@ -222,11 +229,15 @@ cmpPasswords                endp
 
 и воспользовавшись программой-патчером, я заменил операцию условного перехода на две операции NOP:
 
-![alt text](readmeImgs/image2.png)
+
+<img src="readmeImgs/image2.png" alt="image" width="1000" height="500">
+
 
 Взломанная программа выводит надпись "access approved" при вводе любого пароля:
 
-![alt text](readmeImgs/image3.png)
+
+<img src="readmeImgs/image3.png" alt="image" width="1000" height="100">
+
 
 
 
