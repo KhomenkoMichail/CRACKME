@@ -182,6 +182,55 @@ With this input, the program calculates the hash of the user's password twice an
 <img width="750" height="88" alt="image" src="https://github.com/user-attachments/assets/00358047-cff4-4f64-9515-c2349f7295b0" />
 
 
+## Patcher in C language.
+
+### Description
+
+To make hacking more effective, I wrote patcher program in C (the source files are located in the patch folder). The program accepts two arguments: the filename of the program being hacked and the name of the patch-file, which contains instructions for replacing bytes in the binary file (in the format <offset>: <byte value located at the given address>).
+
+```
+0120: 90
+0121: 90
+```
+
+For example, the program will place two NOP operations at offsets 0120h and 0121h following this instruction.
+
+The program reads the contents of the binary file into the buffer, replaces it according to the instructions in the patch file, and overwrites the binary file.
+
+These operations are accompanied by an 8-bit NOKIA-3310 ringtone and a hacking animation:
+
+
+<img src="/patch/screensAndSound/screen0.bmp" alt="image" width="400" height="600">
+
+
+### Using for hacking
+
+Using the IDA disassembler on my partner's .com file, I noticed that at addresses 0120h and 0121h there is a conditional jump operation jnz, which redirects the program to output the phrase "access denied" if the password hashes do not match:
+
+
+<img src="readmeImgs/image1.png" alt="image" width="1000" height="500">
+
+
+I placed the following instructions in the file "patch.txt":
+
+```
+0120: 90
+0121: 90
+```
+
+Using a patcher program, I replaced the conditional jump operation with two NOP operations:
+
+
+<img src="readmeImgs/image2.png" alt="image" width="1000" height="500">
+
+
+The hacked program displays the message "access approved" when entering any password:
+
+
+<img src="readmeImgs/image3.png" alt="image" width="1000" height="100">
+
+
+
 
 
 
