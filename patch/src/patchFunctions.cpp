@@ -5,6 +5,7 @@
 
 #include "../include/patchFunctions.h"
 #include "../include/fileFunctions.h"
+#include "../include/graphicFunctions.h"
 
 int changeAimFile (aimFile_t* aimFile, const char* patchFileName) {
     assert(aimFile);
@@ -16,6 +17,15 @@ int changeAimFile (aimFile_t* aimFile, const char* patchFileName) {
         perror("");
         return 1;
     }
+
+    unsigned long long expectedFileHash = 0;
+    fscanf(patchFile, "%llu", &expectedFileHash);
+
+    if (expectedFileHash != getFileHash(aimFile->bufferCopy)) {
+        printf("Error! Invalid file hash!\n");
+        return 1;
+    }
+
 
     unsigned int newByte = 0;
     unsigned int offset = 0;
@@ -56,39 +66,24 @@ int changeAimFile (aimFile_t* aimFile, const char* patchFileName) {
     return 0;
 }
 
-void runGif(void) {
-    HDC screenShotsArr[NUM_OF_SCREENSHOTS] = {};
-    char fileName[100];
-    int screenCounter = 0;
+int goPatchFunc (aimFile_t* aimFile, const char* patchFileName) {
+    assert(aimFile);
+    assert(patchFileName);
 
-    for (int num = 0; num < NUM_OF_SCREENSHOTS; num++) {
-        sprintf(fileName, "screensAndSound/screen%d.bmp", num);
-        screenShotsArr[num] = txLoadImage(fileName);
-        if (screenShotsArr[num] == NULL) {
-            printf("Failed to load: %s\n", fileName);
-            break;
-        }
-        screenCounter++;
+    if (copyFileContent(aimFile))
+        return 1;
+
+    if (changeAimFile (aimFile, patchFileName)) {
+        free(aimFile->bufferCopy);
+        return 1;
     }
 
-    if (screenCounter == 0) {
-        printf("No frames loaded\n");
-        return;
-    }
 
-    int curScreen = 0;
-    for (int i = 0; i < 25; i++) {
-        txSleep(150);
+    txPlaySound("screensAndSound/nokia_3310.wav", SND_ASYNC);
+    runGif();
 
-        if (screenShotsArr[curScreen] != NULL) {
-            txBitBlt(txDC(), 0, 0, 1260, 1260, screenShotsArr[curScreen], 0, 0);
-        }
+    txPlaySound(NULL);
+    free(aimFile->bufferCopy);
 
-        curScreen = (curScreen + 1) % screenCounter;
-    }
+    return 0;
 }
-
-void createWindow (void) {
-        txCreateWindow(1260, 1260);
-}
-
